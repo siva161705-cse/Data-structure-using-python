@@ -1,0 +1,22 @@
+from collections import deque
+
+s = input("Enter a string: ")
+
+# Remove special characters and convert to lowercase
+s = ''.join(ch.lower() for ch in s if ch.isalnum())
+
+# Create deque
+dq = deque(s)
+
+# Check palindrome
+palindrome = True
+
+while len(dq) > 1:
+    if dq.popleft() != dq.pop():
+        palindrome = False
+        break
+
+if palindrome:
+    print("Palindrome")
+else:
+    print("Not a Palindrome")
