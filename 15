@@ -1,0 +1,119 @@
+from typing import List, Tuple, Optional
+
+
+class MazeSolver:
+    def __init__(
+        self,
+        maze: List[List[int]],
+        start: Tuple[int, int],
+        end: Tuple[int, int]
+    ):
+        self.maze = maze
+        self.start = start
+        self.end = end
+        self.rows = len(maze)
+        self.cols = len(maze[0])
+
+        # Directions: down, up, right, left
+        self.directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    def is_valid(self, r: int, c: int, visited: set) -> bool:
+        return (
+            0 <= r < self.rows
+            and 0 <= c < self.cols
+            and self.maze[r][c] == 0
+            and (r, c) not in visited
+        )
+
+    def solve(self) -> Optional[List[Tuple[int, int]]]:
+        """Returns the path as a list of (row, col) tuples."""
+        visited = set()
+        parent = {}
+        stack = [self.start]
+
+        while stack:
+            curr = stack.pop()
+
+            if curr in visited:
+                continue
+
+            visited.add(curr)
+
+            if curr == self.end:
+                return self._reconstruct_path(parent, curr)
+
+            r, c = curr
+
+            for dr, dc in self.directions:
+                nr, nc = r + dr, c + dc
+
+                if self.is_valid(nr, nc, visited):
+                    parent[(nr, nc)] = curr
+                    stack.append((nr, nc))
+
+        return None
+
+    def _reconstruct_path(
+        self,
+        parent: dict,
+        end_cell: Tuple[int, int]
+    ) -> List[Tuple[int, int]]:
+        path = [end_cell]
+
+        while path[-1] in parent:
+            path.append(parent[path[-1]])
+
+        path.reverse()
+        return path
+
+    def print_solution(self, path: List[Tuple[int, int]]) -> None:
+        display = [
+            ['#' if self.maze[r][c] == 1 else '.'
+             for c in range(self.cols)]
+            for r in range(self.rows)
+        ]
+
+        for r, c in path:
+            display[r][c] = '*'
+
+        sr, sc = self.start
+        er, ec = self.end
+
+        display[sr][sc] = 'S'
+        display[er][ec] = 'E'
+
+        for row in display:
+            print(' '.join(row))
+
+
+def main():
+    # Grid representation: 0 = Open path, 1 = Wall
+    maze = [
+        [0, 0, 0, 1, 0, 0, 0, 0],
+        [1, 1, 0, 1, 0, 1, 1, 0],
+        [0, 0, 0, 1, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 0, 1, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 1, 1, 0, 1, 1, 1, 0],
+        [0, 0, 1, 0, 0, 0, 1, 0],
+        [1, 0, 0, 0, 1, 0, 0, 0]
+    ]
+
+    start = (0, 0)
+    end = (7, 7)
+
+    solver = MazeSolver(maze, start, end)
+    path = solver.solve()
+
+    if path:
+        print(f"Path found! Length: {len(path)} cells\n")
+        solver.print_solution(path)
+
+        print("\nPath coordinates:")
+        print(" -> ".join(f"({r},{c})" for r, c in path))
+    else:
+        print("No path exists between start and end.")
+
+
+if __name__ == "__main__":
+    main()
